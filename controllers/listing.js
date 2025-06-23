@@ -30,35 +30,41 @@ module.exports.showListing=async(req,res)=>{
 
     }
 module.exports.createListing=async (req,res)=>{
-                let response = await geocodingClient.forwardGeocode({
-                 query: req.body.listing.location,
-                 limit: 1
-                   })
-                 .send();
-                let url=req.file.path;
-                let filename =req.file.filename;
-                console.log(url,"..",filename);
-            
-                let newListing = new Listing(req.body.listing);
-                console.log(req.user._id)
-                newListing.owner=req.user._id;
-                newListing.image={url,filename};
-                newListing.geometry = {
-  type: "Point",
-  coordinates: [longitude, latitude]
+  const response = await geocodingClient
+    .forwardGeocode({
+      query: req.body.listing.location,
+      limit: 1
+    })
+    .send();
+
+  const feature = response.body.features[0];
+  if (!feature) {
+    req.flash("error", "Invalid location");
+    return res.redirect("/listings/new");
+  }
+
+  const [longitude, latitude] = feature.geometry.coordinates;
+
+  const url = req.file.path;
+  const filename = req.file.filename;
+
+  const newListing = new Listing(req.body.listing);
+  newListing.owner = req.user._id;
+  newListing.image = { url, filename };
+  newListing.geometry = {
+    type: "Point",
+    coordinates: [longitude, latitude]
+  };
+
+  const savedListing = await newListing.save();
+  console.log(savedListing);
+
+  req.flash("success", "New Listing Created!");
+  res.redirect("/listings");
 };
 
-                newListing.geometry=response.body.features[0].geometry;
-                 let savedListing = await newListing.save();
-                 console.log(savedListing);
-                console.log("Listing object:", newListing);
-                console.log("coordinates:", newListing?.geometry?.coordinates);
 
-
-                req.flash("success","New Listing Created!");
-    
-                 res.redirect("/listings");
-     }
+     
 module.exports.editListing=async(req,res)=>{
             let {id}=req.params;
             const listing=await Listing.findById(id);

@@ -7,8 +7,8 @@ const express=require("express");
 const app=express();
 const mongoose=require("mongoose");
 
-// const MONGO_URL="mongodb://127.0.0.1:27017/wanderlust";
-const dbUrl=process.env.ATLASDB_URL;
+ const MONGO_URL="mongodb://127.0.0.1:27017/wanderlust";
+//const dbUrl=process.env.ATLASDB_URL;
 
 const path=require("path");
 const methodOverride=require("method-override");
@@ -34,16 +34,16 @@ const reviewRouter=require("./routes/review.js");
 const userRouter=require("./routes/user.js");
 const emitter = require('events');
 emitter.defaultMaxListeners = 20;
-const store=mongoStore.create({
-    mongoUrl:dbUrl,
-    crypto:{
-        secret:process.env.SECRET,
-    },
-    touchAfter:24*3600,
-});
-store.on("error",()=>{
-    console.log("ERROR IN MONGO SESSION STORE",err);
-})
+// const store=mongoStore.create({
+//     mongoUrl:dbUrl,
+//     crypto:{
+//         secret:process.env.SECRET,
+//     },
+//     touchAfter:24*3600,
+// });
+// store.on("error",()=>{
+//     console.log("ERROR IN MONGO SESSION STORE",err);
+// })
 const sessionOptions={
     secret:process.env.SECRET,
     resave:false,
@@ -77,7 +77,7 @@ main().then(()=>{
     console.log(err);
 });
 async function main(){
-    await mongoose.connect(dbUrl);
+    await mongoose.connect(MONGO_URL);
 }
 // app.get("/",(req,res)=>{
 //     res.send("Hi, i am root");
